@@ -12,6 +12,7 @@ export const getUsers = createAsyncThunk(
 		}
 	}
 )
+
 const initialState = {
 	data: [],
 	filteredData: [],
@@ -22,10 +23,19 @@ const initialState = {
 		direction: 'none',
 	},
 	filters: {
-		name: '',
+		lastName: '',
+		firstName: '',
+		maidenName: '',
 		age: '',
 		gender: '',
 		phone: '',
+		email: '',
+		country: '',
+		city: '',
+	},
+	pagination: {
+		currentPage: 1,
+		itemsPerPage: 10,
 	},
 	columnWidths: {
 		firstName: 150,
@@ -40,6 +50,7 @@ const initialState = {
 	},
 	selectedUser: null,
 }
+
 export const userSlice = createSlice({
 	name: 'user',
 	initialState,
@@ -48,7 +59,15 @@ export const userSlice = createSlice({
 			state.sortConfig = action.payload
 		},
 		setFilter: (state, action) => {
-			state.filters[action.payload.key] = action.payload.value
+			const { key, value } = action.payload
+			state.filters[key] = value
+			state.pagination.currentPage = 1
+		},
+		setPage: (state, action) => {
+			state.pagination.currentPage = action.payload
+		},
+		setItemsPerPage: (state, action) => {
+			state.pagination.itemsPerPage = action.payload
 		},
 		setColumnWidth: (state, action) => {
 			const { column, width } = action.payload
@@ -59,44 +78,66 @@ export const userSlice = createSlice({
 		},
 		applyFiltersAndSorting: state => {
 			let filteredUsers = [...state.data]
-			if (state.filters.name) {
-				const searchTerm = state.filters.name.toLowerCase()
-				filteredUsers = filteredUsers.filter(user =>
-					`${user.firstName} ${user.lastName}`
-						.toLowerCase()
-						.includes(searchTerm)
-				)
-			}
-			if (state.filters.age) {
-				filteredUsers = filteredUsers.filter(
-					user => user.age.toString() === state.filters.age
-				)
-			}
-			if (state.filters.gender) {
-				filteredUsers = filteredUsers.filter(
-					user =>
-						user.gender.toLowerCase() === state.filters.gender.toLowerCase()
-				)
-			}
-			if (state.filters.phone) {
-				filteredUsers = filteredUsers.filter(user =>
-					user.phone.includes(state.filters.phone)
-				)
-			}
 
+			// Применяем все фильтры
+			Object.entries(state.filters).forEach(([key, value]) => {
+				if (!value) return
+
+				switch (key) {
+					case 'lastName':
+					case 'firstName':
+					case 'maidenName':
+					case 'email':
+					case 'country':
+					case 'city':
+						filteredUsers = filteredUsers.filter(user =>
+							user[key]?.toLowerCase().includes(value.toLowerCase())
+						)
+						break
+					case 'age':
+						filteredUsers = filteredUsers.filter(
+							user => user.age.toString() === value
+						)
+						break
+					case 'gender':
+						filteredUsers = filteredUsers.filter(
+							user => user.gender.toLowerCase() === value.toLowerCase()
+						)
+						break
+					case 'phone':
+						filteredUsers = filteredUsers.filter(user =>
+							user.phone.includes(value)
+						)
+						break
+				}
+			})
+
+			// Применяем сортировку
 			if (state.sortConfig.key && state.sortConfig.direction !== 'none') {
 				filteredUsers.sort((a, b) => {
-					const aValue = a[state.sortConfig.key]
-					const bValue = b[state.sortConfig.key]
-					if (aValue < bValue) {
-						return state.sortConfig.direction === 'ascending' ? -1 : 1
+					let aValue = a[state.sortConfig.key]
+					let bValue = b[state.sortConfig.key]
+
+					// Для вложенных свойств (например, address.country)
+					if (state.sortConfig.key.includes('.')) {
+						const keys = state.sortConfig.key.split('.')
+						aValue = keys.reduce((obj, key) => obj?.[key], a)
+						bValue = keys.reduce((obj, key) => obj?.[key], b)
 					}
-					if (aValue > bValue) {
-						return state.sortConfig.direction === 'ascending' ? 1 : -1
+
+					// Сравнение для разных типов данных
+					if (aValue === undefined || bValue === undefined) return 0
+					if (typeof aValue === 'string' && typeof bValue === 'string') {
+						return state.sortConfig.direction === 'ascending'
+							? aValue.localeCompare(bValue)
+							: bValue.localeCompare(aValue)
 					}
-					return 0
+					return state.sortConfig.direction === 'ascending'
+						? (aValue || 0) - (bValue || 0)
+						: (bValue || 0) - (aValue || 0)
 				})
 			}
+
 			state.filteredData = filteredUsers
 		},
 	},
@@ -116,11 +157,15 @@ export const userSlice = createSlice({
 			})
 	},
 })
+
 export const {
 	setSortConfig,
 	setFilter,
 	setColumnWidth,
 	setSelectedUser,
 	applyFiltersAndSorting,
+	setPage,
+	setItemsPerPage,
 } = userSlice.actions
+
 export default userSlice.reducer

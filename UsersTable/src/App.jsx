@@ -6,7 +6,6 @@ function App() {
 		<div className='app'>
 			<h1 className='title'>Таблица пользователей</h1>
 			<UserTable />
-			{/* <UserModal /> */}
 		</div>
 	)
 }

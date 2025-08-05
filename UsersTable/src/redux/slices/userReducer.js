@@ -76,10 +76,10 @@ export const userSlice = createSlice({
 		setSelectedUser: (state, action) => {
 			state.selectedUser = action.payload
 		},
+
 		applyFiltersAndSorting: state => {
 			let filteredUsers = [...state.data]
 
-			// Применяем все фильтры
 			Object.entries(state.filters).forEach(([key, value]) => {
 				if (!value) return
 
@@ -112,20 +112,17 @@ export const userSlice = createSlice({
 				}
 			})
 
-			// Применяем сортировку
 			if (state.sortConfig.key && state.sortConfig.direction !== 'none') {
 				filteredUsers.sort((a, b) => {
 					let aValue = a[state.sortConfig.key]
 					let bValue = b[state.sortConfig.key]
 
-					// Для вложенных свойств (например, address.country)
 					if (state.sortConfig.key.includes('.')) {
 						const keys = state.sortConfig.key.split('.')
 						aValue = keys.reduce((obj, key) => obj?.[key], a)
 						bValue = keys.reduce((obj, key) => obj?.[key], b)
 					}
 
-					// Сравнение для разных типов данных
 					if (aValue === undefined || bValue === undefined) return 0
 					if (typeof aValue === 'string' && typeof bValue === 'string') {
 						return state.sortConfig.direction === 'ascending'

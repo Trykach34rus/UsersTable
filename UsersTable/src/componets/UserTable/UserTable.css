@@ -5,49 +5,49 @@
 	padding: 20px;
 }
 
-.tableWrapper {
+.table-wrapper {
 	overflow-x: auto;
 	margin-bottom: 20px;
 	border: 1px solid #ddd;
 	border-radius: 4px;
 }
 
-.userTable {
+.user-table {
 	width: 100%;
 	border-collapse: collapse;
 }
 
-.userTable th,
-.userTable td {
+.user-table th,
+.user-table td {
 	padding: 12px;
 	text-align: left;
 	border-bottom: 1px solid #ddd;
 	position: relative;
 }
 
-.userTable th {
+.user-table th {
 	background-color: #f5f5f5;
 	cursor: pointer;
 	user-select: none;
 }
 
-.userTable th:hover {
+.user-table th:hover {
 	background-color: #e9e9e9;
 }
 
-.userTable th div {
+.user-table th div {
 	padding-right: 20px;
 }
 
-.userTable th input,
-.userTable th select {
+.user-table th input,
+.user-table th select {
 	width: 100%;
 	padding: 5px;
 	margin-top: 5px;
 	box-sizing: border-box;
 }
 
-.userTable tbody tr:hover {
+.user-table tbody tr:hover {
 	background-color: #f5f5f5;
 	cursor: pointer;
 }

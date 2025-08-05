@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
 	applyFiltersAndSorting,
@@ -10,9 +10,11 @@ import {
 	setSelectedUser,
 	setSortConfig,
 } from '../../redux/slices/userReducer.js'
+import UserModal from '../UserModal/UserModal'
 import './UserTable.css'
 
 export default function UserTable() {
+	const [isModalOpen, setIsModalOpen] = useState(false)
 	const dispatch = useDispatch()
 	const {
 		filteredData = [],
@@ -23,6 +25,7 @@ export default function UserTable() {
 		pagination,
 		columnWidths,
 		data,
+		selectedUser,
 	} = useSelector(state => state.user)
 
 	const resizingRef = useRef({
@@ -68,6 +71,12 @@ export default function UserTable() {
 
 	function handleRowClick(user) {
 		dispatch(setSelectedUser(user))
+		setIsModalOpen(true)
+	}
+
+	function closeModal() {
+		setIsModalOpen(false)
+		dispatch(setSelectedUser(null))
 	}
 
 	function startResize(columnName, e) {
@@ -77,7 +86,6 @@ export default function UserTable() {
 			startX: e.clientX,
 			startWidth: columnWidths[columnName],
 		}
-
 		document.addEventListener('mousemove', handleResize)
 		document.addEventListener('mouseup', stopResize)
 		e.preventDefault()
@@ -85,10 +93,8 @@ export default function UserTable() {
 
 	function handleResize(e) {
 		if (!resizingRef.current.isResizing) return
-
 		const deltaX = e.clientX - resizingRef.current.startX
 		const newWidth = Math.max(50, resizingRef.current.startWidth + deltaX)
-
 		dispatch(
 			setColumnWidth({
 				column: resizingRef.current.columnName,
@@ -126,8 +132,8 @@ export default function UserTable() {
 
 	return (
 		<div className='container'>
-			<div className='tableWrapper'>
-				<table className='userTable'>
+			<div className='table-wrapper'>
+				<table className='user-table'>
 					<thead>
 						<tr>
 							<th style={{ width: columnWidths.lastName }}>
@@ -413,6 +419,14 @@ export default function UserTable() {
 					</select>
 				</div>
 			</div>
+
+			{isModalOpen && selectedUser && (
+				<UserModal
+					user={selectedUser}
+					onClose={closeModal}
+					isOpen={isModalOpen}
+				/>
+			)}
 		</div>
 	)
 }
